@@ -1,0 +1,10 @@
+node_modules
+dist
+test-results
+playwright-report
+.DS_Store
+
+# Файлы агентной среды — часть проекта (глобальные исключения на них не действуют)
+!AGENTS.md
+!.mcp.json
+!.claude/

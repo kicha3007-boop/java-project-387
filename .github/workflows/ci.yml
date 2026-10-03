@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generated code matches the contract
+        run: npm run generate && git diff --exit-code
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Docker image starts and answers on PORT
+        run: |
+          docker build -t calendar .
+          docker run -d --name calendar -e PORT=8080 -p 8080:8080 calendar
+          for i in $(seq 1 30); do curl -sf http://localhost:8080/ > /dev/null && exit 0; sleep 1; done
+          docker logs calendar
+          exit 1
